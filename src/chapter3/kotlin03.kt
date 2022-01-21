@@ -1,3 +1,5 @@
+package chapter3
+
 //3.1. 코틀린에서 컬렉션 만들기. 코틀린 컬렉션은 자바 컬렉션과 똑같은 클래스이다.
 val strings = listOf("first", "second", "third")
 val numbers = setOf(1,2,3,4,5)

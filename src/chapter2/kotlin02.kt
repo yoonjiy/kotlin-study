@@ -1,3 +1,5 @@
+package chapter2
+
 //2.1. 함수와 변수
 import java.io.BufferedReader
 import java.io.StringReader

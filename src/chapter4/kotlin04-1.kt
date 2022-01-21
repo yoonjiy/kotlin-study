@@ -1,3 +1,5 @@
+package chapter4
+
 import java.io.Serializable
 
 //4.1.클래스 계층 정의

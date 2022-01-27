@@ -52,6 +52,19 @@ fun <T> copyElements(source: Collection<T>, target:MutableCollection<T>){
 //코틀린 컬렉션과 자바.
 //자바는 읽기 전용 컬렉션과 변경 가능 컬렉션을 구분하지 않으므로, 코틀린에서 읽기 전용으로 선언된 객체라도 자바에 넘기면 객체의 내용이 변경될 수 있다. -> 개발자의 책임..
 
+//컬렉션을 플랫폼 타입으로 다루기
+/*
+- 컬렉션이 널이 될 수 있는가?
+- 컬렉션의 권소가 널이 될 수 있는가?
+- 오버라이드하는 메소드가 컬렉션을 변경할 수 있는가?
+*/
+
+//객체의 배열과 원시 타입의 배열
+fun forEachIndexed(args:Array<String>){
+    args.forEachIndexed{index, element -> println("Argument $index is: $element")}
+}
+
+
 fun main(){
     //널 가능성과 컬렉션
     val reader = BufferedReader(StringReader("1\nabc\n42"))
@@ -63,4 +76,11 @@ fun main(){
     val target:MutableCollection<Int> = arrayListOf(1)
     copyElements(source, target)
     println(target)
+
+    //객체의 배열과 원시 타입의 배열
+    val letters = Array<String>(26){ i -> ('a'+i).toString() }
+    println(letters.joinToString(""))
+
+    val strings = listOf("a","b","c")
+    println("%s/%s/%s".format(*strings.toTypedArray())) //vararg 인자를 넘기기 위해 스프레드 연산자 * 사용
 }

@@ -2,6 +2,8 @@ package chapter7
 
 import java.beans.PropertyChangeListener
 import java.beans.PropertyChangeSupport
+import kotlin.properties.Delegates
+import kotlin.reflect.KProperty
 
 //프로퍼티 접근자 로직 재활용: 위임 프로퍼티
 //by lazy()를 사용한 프로퍼티 초기화 지연
@@ -31,7 +33,7 @@ class Person(val name:String){
 //위임 프로퍼티 구현
 //어떤 객체의 프로퍼티가 바뀔 때마다 리스너에게 변경 통지를 보내는 기능을 구현
 
-//위임 프로퍼티 없이 구현
+//1) 위임 프로퍼티 없이 구현, 프로퍼티 변경 통지 직접 구현하는 경우
 //PropertyChangeSupport를 사용하기 위한 도우미 클래스
 open class PropertyChangeAware{
     protected val changeSupport = PropertyChangeSupport(this)
@@ -60,6 +62,55 @@ class Person2(val name:String, age:Int, salary:Int): PropertyChangeAware(){
 
 }
 
+//2) 도우미 클래스를 통해 프로퍼티 변경 통지 구현하기
+class ObservableProperty(
+    val propName:String, var propValue:Int, val changeSupport: PropertyChangeSupport
+){
+    fun getValue(): Int = propValue
+    fun setValue(newValue:Int){
+        val oldValue = propValue
+        propValue = newValue
+        changeSupport.firePropertyChange(propName, oldValue, newValue)
+    }
+}
+
+class Person3(val name:String, age:Int, salary:Int): PropertyChangeAware(){
+    val _age = ObservableProperty("age", age, changeSupport)
+    var age:Int
+        get() = _age.getValue()
+        set(value) {_age.setValue(value)}
+    val _salary = ObservableProperty("salary", salary, changeSupport)
+    var salary: Int
+        get() = _salary.getValue()
+        set(value) {_salary.setValue(value)}
+}
+
+//3) 위임 프로퍼티를 통해 프로퍼티 변경 통지를 받는 경우
+//ObservableProperty를 코틀린 관례에 맞게 수정
+class ObservableProperty2(
+    var propValue:Int, val changeSupport: PropertyChangeSupport
+){
+    operator fun getValue(p:Person5, prop:KProperty<*>): Int = propValue
+    operator fun setValue(p:Person5, prop:KProperty<*>, newValue:Int){
+        val oldValue = propValue
+        propValue = newValue
+        changeSupport.firePropertyChange(prop.name, oldValue, newValue)
+    }
+}
+
+class Person5(val name:String, age:Int, salary: Int): PropertyChangeAware(){
+    var age: Int by ObservableProperty2(age, changeSupport)
+    var salary: Int by ObservableProperty2(salary, changeSupport)
+}
+
+//4) 코틀린 표준 라이브러리를 이용해 프로퍼티 변경 통지 구현하기
+class Person6(val name:String, age:Int, salary: Int): PropertyChangeAware(){
+    private val observer = {
+        prop: KProperty<*>, oldValue:Int, newValue:Int -> changeSupport.firePropertyChange(prop.name, oldValue, newValue)
+    }
+    var age: Int by Delegates.observable(age, observer)
+    var salary: Int by Delegates.observable(salary, observer)
+}
 
 fun main(){
     val p = Person("Alice")
